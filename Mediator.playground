@@ -1,0 +1,76 @@
+protocol Mediator {
+    func registerAircraft(aircraft: Aircraft)
+    func send(message: String, aircraft: Aircraft)
+}
+
+protocol Aircraft {
+    var id: String { get }
+    var atc: AirTrafficControlMediator { get set }
+    func send(message: String)
+    func receive(message: String)
+}
+
+class AirTrafficControlMediator: Mediator {
+    private var aircrafts: [Aircraft]
+
+    init() {
+        self.aircrafts = []
+    }
+
+    func registerAircraft(aircraft: Aircraft) {
+        aircrafts.append(aircraft)
+    }
+
+    func send(message: String, aircraft: Aircraft) {
+        for otherAircraft in aircrafts {
+            if otherAircraft.id != aircraft.id {
+                otherAircraft.receive(message: message)
+            }
+        }
+    }
+}
+
+class Boeing747: Aircraft {
+    var id: String
+    var atc: AirTrafficControlMediator
+
+    init(id: String, atc: AirTrafficControlMediator) {
+        self.id = id
+        self.atc = atc
+        atc.registerAircraft(aircraft: self)
+    }
+
+    func send(message: String) {
+        atc.send(message: message, aircraft: self)
+    }
+
+    func receive(message: String) {
+        print("Boeing 747 received: \(message)")
+    }
+}
+
+class AirbusA320: Aircraft {
+    var id: String
+    var atc: AirTrafficControlMediator
+
+    init(id: String, atc: AirTrafficControlMediator) {
+        self.id = id
+        self.atc = atc
+        atc.registerAircraft(aircraft: self)
+    }
+
+    func send(message: String) {
+        atc.send(message: message, aircraft: self)
+    }
+
+    func receive(message: String) {
+        print("Airbus A320 received: \(message)")
+    }
+}
+
+let atcMediator = AirTrafficControlMediator()
+let boeing = Boeing747(id: "Boeing 747", atc: atcMediator)
+let airbus = AirbusA320(id: "Airbus A320", atc: atcMediator)
+
+boeing.send(message: "Requesting permission to land.")
+airbus.send(message: "Requesting permission to take off.")
